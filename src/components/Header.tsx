@@ -1,10 +1,10 @@
 import { useLanguage, languages } from '@/contexts/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { Shield, AlertTriangle, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setIsLanguageModalOpen, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,40 +13,36 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* Logo */}
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
             <div className="p-2 bg-primary rounded-full">
               <Shield className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">{t('app.name')}</h1>
+            <h1 className="text-xl font-bold tracking-tight">GramHealth</h1>
+
           </button>
 
           <div className="flex items-center gap-3 justify-between md:justify-end">
             {/* Language Switcher */}
-            <div className="flex items-center gap-1 bg-secondary p-1 rounded-full overflow-x-auto">
-              {languages.map((lang) => (
-                <motion.button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`language-pill whitespace-nowrap ${
-                    language === lang.code ? 'language-pill-active' : 'hover:bg-card/50'
-                  }`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="hidden sm:inline">{lang.label}</span>
-                  <span className="sm:hidden">{lang.short}</span>
-                </motion.button>
-              ))}
-            </div>
+            <motion.button
+              onClick={() => setIsLanguageModalOpen(true)}
+              className="flex items-center gap-2 bg-secondary px-4 py-2 rounded-full hover:bg-secondary/80 transition-colors"
+              whileTap={{ scale: 0.95 }}
+            >
+              <Globe className="w-5 h-5 text-primary" />
+              <span className="font-semibold text-sm">
+                {languages.find(l => l.code === language)?.label || 'Language'}
+              </span>
+            </motion.button>
 
             {/* Emergency Button */}
             <motion.button
               onClick={() => navigate('/emergency')}
               className="emergency-button"
               whileTap={{ scale: 0.95 }}
-              animate={{ 
+              animate={{
                 boxShadow: ['0 0 0 0 rgba(239, 68, 68, 0)', '0 0 0 8px rgba(239, 68, 68, 0.2)', '0 0 0 0 rgba(239, 68, 68, 0)']
               }}
               transition={{ duration: 2, repeat: Infinity }}
