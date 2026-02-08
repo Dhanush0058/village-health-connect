@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog } from 'lucide-react';
+import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from '@/hooks/useLocation';
 
 const pickupPoints = [
   { name: 'Molo Village Center', distance: '2.5 km', status: 'Open now', icon: Store },
@@ -15,6 +16,19 @@ const MedicineDelivery = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'human' | 'livestock'>('human');
+  const { location, getLocation, isLoading } = useLocation();
+
+  const handleMapClick = () => {
+    getLocation();
+  };
+
+  useEffect(() => {
+    if (location) {
+      const query = mode === 'human' ? 'pharmacies' : 'veterinary clinics';
+      const url = `https://www.google.com/maps/search/${query}/@${location.latitude},${location.longitude},14z`;
+      window.open(url, '_blank');
+    }
+  }, [location, mode]);
 
   return (
     <Layout>
@@ -30,7 +44,7 @@ const MedicineDelivery = () => {
         </motion.button>
 
         {/* Title */}
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -39,25 +53,23 @@ const MedicineDelivery = () => {
         </motion.div>
 
         {/* Mode Toggle */}
-        <motion.div 
+        <motion.div
           className="flex bg-secondary p-1.5 rounded-full mb-8 max-w-sm mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <button
             onClick={() => setMode('human')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold transition-all ${
-              mode === 'human' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold transition-all ${mode === 'human' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
+              }`}
           >
             <User className="w-5 h-5" />
             For Humans
           </button>
           <button
             onClick={() => setMode('livestock')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold transition-all ${
-              mode === 'livestock' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold transition-all ${mode === 'livestock' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
+              }`}
           >
             <Dog className="w-5 h-5" />
             For Livestock
@@ -96,7 +108,7 @@ const MedicineDelivery = () => {
         </p>
 
         {/* Nearby Pickup Points */}
-        <motion.div 
+        <motion.div
           className="max-w-md mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,8 +119,12 @@ const MedicineDelivery = () => {
               <MapPin className="w-5 h-5 text-primary" />
               {t('medicine.pickup')}
             </h2>
-            <button className="text-primary text-sm font-bold flex items-center gap-1">
-              MAP VIEW
+            <button
+              onClick={handleMapClick}
+              disabled={isLoading}
+              className="text-primary text-sm font-bold flex items-center gap-1 hover:underline disabled:opacity-50"
+            >
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'MAP VIEW'}
             </button>
           </div>
 
@@ -121,6 +137,7 @@ const MedicineDelivery = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={handleMapClick}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
@@ -138,7 +155,7 @@ const MedicineDelivery = () => {
         </motion.div>
 
         {/* Help Hotline */}
-        <motion.div 
+        <motion.div
           className="mt-8 p-6 bg-health-green-light rounded-2xl border border-primary/20 text-center max-w-md mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -152,5 +169,6 @@ const MedicineDelivery = () => {
     </Layout>
   );
 };
+
 
 export default MedicineDelivery;
