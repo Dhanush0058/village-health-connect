@@ -1,107 +1,263 @@
-import { useLanguage } from '@/contexts/LanguageContext';
-import Layout from '@/components/Layout';
-import { motion } from 'framer-motion';
-import { MessageCircle, Phone, Video, Clock, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAIChat } from '@/hooks/useAIChat';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX, Loader2, MessageCircle, Video, Phone } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import '@/types/speech-recognition.d';
 
 const DoctorConsult = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
+  const { speak, stop, isSpeaking } = useTextToSpeech();
+  const [input, setInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'chat' | 'voice' | 'video'>('chat');
+  const [isListening, setIsListening] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<InstanceType<NonNullable<typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition>> | null>(null);
 
-  const consultOptions = [
-    {
-      icon: MessageCircle,
-      title: t('doctor.chat'),
-      description: 'Type your symptoms',
-      color: 'bg-health-blue',
-    },
-    {
-      icon: Phone,
-      title: t('doctor.audio'),
-      description: 'Talk on phone',
-      color: 'bg-health-orange',
-    },
-    {
-      icon: Video,
-      title: t('doctor.video'),
-      description: 'Face to face',
-      color: 'bg-primary',
-    },
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognitionAPI) {
+      recognitionRef.current = new SpeechRecognitionAPI();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      const langMap: Record<string, string> = {
+        en: 'en-US',
+        hi: 'hi-IN',
+        sw: 'sw-KE',
+        fr: 'fr-FR',
+        es: 'es-ES',
+        ar: 'ar-SA',
+        bn: 'bn-IN',
+        ta: 'ta-IN',
+        te: 'te-IN',
+      };
+      recognitionRef.current.lang = langMap[language] || 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, [language]);
+
+  const handleSend = () => {
+    if (input.trim()) {
+      sendMessage(input);
+      setInput('');
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
+
+  const handleSpeak = (text: string) => {
+    if (isSpeaking) {
+      stop();
+    } else {
+      speak(text, language);
+    }
+  };
+
+  const tabs = [
+    { id: 'chat', icon: MessageCircle, label: t('doctor.chat') },
+    { id: 'voice', icon: Phone, label: t('doctor.audio') },
+    { id: 'video', icon: Video, label: t('doctor.video') },
   ];
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        {/* Back Button */}
-        <motion.button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 big-button bg-secondary"
-          whileTap={{ scale: 0.95 }}
-        >
-          <ArrowLeft className="w-6 h-6" />
-          <span>Back</span>
-        </motion.button>
-
-        {/* Title */}
-        <motion.div 
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('doctor.title')}</h1>
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Clock className="w-5 h-5" />
-            <span>{t('doctor.wait')}</span>
+    <Layout showDisclaimer={false}>
+      <div className="container mx-auto px-4 py-6 h-[calc(100vh-180px)] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">{t('doctor.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('doctor.wait')}</p>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Consultation Options */}
-        <div className="grid gap-4 max-w-md mx-auto">
-          {consultOptions.map((option, index) => (
-            <motion.button
-              key={option.title}
-              className="flex items-center gap-6 p-6 bg-card rounded-2xl border-4 border-transparent hover:border-primary shadow-lg transition-all"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileTap={{ scale: 0.98 }}
+        {/* Tab Switcher */}
+        <div className="flex gap-2 p-1.5 glass-card rounded-full mb-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'chat' | 'voice' | 'video')}
+              className={`
+                flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-all
+                ${activeTab === tab.id 
+                  ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
             >
-              <div className={`w-20 h-20 ${option.color} rounded-full flex items-center justify-center shadow-lg`}>
-                <option.icon className="w-10 h-10 text-white" />
-              </div>
-              <div className="text-left flex-1">
-                <h3 className="text-2xl font-bold">{option.title}</h3>
-                <p className="text-muted-foreground">{option.description}</p>
-              </div>
-            </motion.button>
+              <tab.icon className="w-5 h-5" />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
           ))}
         </div>
 
-        {/* Online Doctors Preview */}
-        <motion.div 
-          className="mt-10 p-6 bg-health-green-light rounded-2xl max-w-md mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-            <span className="font-bold">12 doctors online now</span>
-          </div>
-          <div className="flex -space-x-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="w-12 h-12 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-lg font-bold"
-              >
-                👨‍⚕️
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+          {messages.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
+            >
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <MessageCircle className="w-12 h-12 text-white" />
               </div>
+              <p className="text-muted-foreground text-lg max-w-sm mx-auto">
+                {language === 'en' 
+                  ? "Hello! I'm your health assistant. How can I help you today?" 
+                  : t('home.title')
+                }
+              </p>
+            </motion.div>
+          )}
+
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div 
+                  className={`
+                    chat-bubble 
+                    ${message.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}
+                  `}
+                >
+                  {message.role === 'assistant' ? (
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                      {message.content && (
+                        <button
+                          onClick={() => handleSpeak(message.content)}
+                          className="mt-2 flex items-center gap-1 text-xs text-secondary hover:text-primary transition-colors"
+                        >
+                          {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                          <span>{t('speak')}</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
+                </div>
+              </motion.div>
             ))}
-            <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-card flex items-center justify-center text-sm font-bold">
-              +7
+          </AnimatePresence>
+
+          {isLoading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-start"
+            >
+              <div className="chat-bubble chat-bubble-ai flex items-center gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-secondary" />
+                <span className="text-muted-foreground">Thinking...</span>
+              </div>
+            </motion.div>
+          )}
+
+          {error && (
+            <div className="text-center py-4">
+              <p className="text-destructive text-sm">{error}</p>
+              <Button variant="outline" onClick={clearChat} className="mt-2">
+                {t('retry')}
+              </Button>
             </div>
-          </div>
-        </motion.div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="glass-card p-3 rounded-full flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleListening}
+            className={`
+              rounded-full transition-all
+              ${isListening 
+                ? 'bg-destructive text-white animate-pulse' 
+                : 'hover:bg-secondary/20'
+              }
+            `}
+            disabled={!recognitionRef.current}
+          >
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </Button>
+
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder={t('doctor.placeholder')}
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-base"
+            disabled={isLoading}
+          />
+
+          <Button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className="rounded-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity"
+            size="icon"
+          >
+            <Send className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
     </Layout>
   );

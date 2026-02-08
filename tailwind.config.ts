@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Lexend", "system-ui", "sans-serif"],
+        display: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -50,16 +50,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        health: {
-          green: "hsl(var(--health-green))",
-          "green-light": "hsl(var(--health-green-light))",
-          blue: "hsl(var(--health-blue))",
-          orange: "hsl(var(--health-orange))",
+        teal: {
+          deep: "hsl(var(--teal-deep))",
+          medical: "hsl(var(--teal-medical))",
+          light: "hsl(var(--teal-light))",
         },
         emergency: {
           DEFAULT: "hsl(var(--emergency-red))",
           light: "hsl(var(--emergency-red-light))",
         },
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
         surface: {
           elevated: "hsl(var(--surface-elevated))",
           sunken: "hsl(var(--surface-sunken))",
@@ -77,10 +78,11 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        "2xl": "1.5rem",
-        "3xl": "2rem",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+        "2xl": "2rem",
+        "3xl": "2.5rem",
+        "4xl": "3rem",
       },
       keyframes: {
         "accordion-down": {
@@ -95,6 +97,13 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      boxShadow: {
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+        'glass-lg': '0 16px 48px 0 rgba(0, 0, 0, 0.12)',
+      },
+      backdropBlur: {
+        'glass': '16px',
       },
     },
   },
