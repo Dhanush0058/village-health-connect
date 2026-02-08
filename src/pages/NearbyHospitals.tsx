@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Phone, Navigation, Building2, Hospital, Stethoscope, Clock, Loader2, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '@/hooks/useLocation';
+import MapComponent from '@/components/MapComponent';
 
 const hospitals = [
   {
@@ -61,14 +62,6 @@ const NearbyHospitals = () => {
     }
   };
 
-  const handleViewMap = () => {
-    if (location) {
-      window.open(`https://www.google.com/maps/search/hospitals/@${location.latitude},${location.longitude},13z`, '_blank');
-    } else {
-      getLocation();
-    }
-  };
-
   // Auto-trigger map if location was just found after a user action
   useEffect(() => {
     // Optional: could auto-redirect or just let the user click again. 
@@ -101,93 +94,76 @@ const NearbyHospitals = () => {
           </div>
         </motion.div>
 
-        {/* Location Button */}
+        {/* content */}
         {!location ? (
-          <motion.button
-            onClick={getLocation}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 p-4 bg-primary text-primary-foreground rounded-2xl mb-8 max-w-md mx-auto hover:bg-primary/90 transition-colors disabled:opacity-70"
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <MapPin className="w-6 h-6" />}
-            <span className="font-bold">{isLoading ? "Finding your location..." : "Enable Location Access"}</span>
-          </motion.button>
-        ) : (
-          <motion.button
-            onClick={handleViewMap}
-            className="w-full flex items-center justify-center gap-3 p-4 bg-secondary text-secondary-foreground rounded-2xl mb-8 max-w-md mx-auto border-2 border-primary"
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Map className="w-6 h-6 text-primary" />
-            <span className="font-bold text-primary">View All Hospitals on Map</span>
-          </motion.button>
-        )}
-
-        {/* Hospital List */}
-        <div className="space-y-4 max-w-lg mx-auto">
-          {hospitals.map((hospital, index) => (
-            <motion.div
-              key={hospital.name}
-              className="bg-card rounded-2xl p-5 shadow-lg border border-border"
+          <>
+            <motion.button
+              onClick={getLocation}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 p-4 bg-primary text-primary-foreground rounded-2xl mb-8 max-w-md mx-auto hover:bg-primary/90 transition-colors disabled:opacity-70"
+              whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
             >
-              {/* Header */}
-              <div className="flex items-start gap-4 mb-4">
-                <div className={`w-14 h-14 ${hospital.color} rounded-full flex items-center justify-center shadow-lg flex-shrink-0`}>
-                  <hospital.icon className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg leading-tight">{hospital.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-muted-foreground">{t(hospital.typeKey)}</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-sm font-medium text-primary ml-auto">{location ? "check map" : hospital.distance}</span>
+              {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <MapPin className="w-6 h-6" />}
+              <span className="font-bold">{isLoading ? "Finding your location..." : "Enable Location Access"}</span>
+            </motion.button>
+
+            {/* Offline/Mock Hospital List */}
+            <div className="space-y-4 max-w-lg mx-auto opacity-70">
+              <p className="text-center text-sm text-muted-foreground mb-4">Example Nearby Hospitals (Enable location to see real ones)</p>
+              {hospitals.map((hospital, index) => (
+                <motion.div
+                  key={hospital.name}
+                  className="bg-card rounded-2xl p-5 shadow-lg border border-border"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={`w-14 h-14 ${hospital.color} rounded-full flex items-center justify-center shadow-lg flex-shrink-0`}>
+                      <hospital.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg leading-tight">{hospital.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-muted-foreground">{t(hospital.typeKey)}</span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-sm font-medium text-primary ml-auto">{hospital.distance}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                  {/* Info and Actions removed for brevity/simplicity in fallback mode, or keep if preferred */}
+                  <div className="flex items-center gap-4 mb-4 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className={hospital.open ? 'text-primary font-medium' : 'text-destructive'}>
+                        {hospital.hours}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-2xl mx-auto"
+          >
+            <MapComponent userLocation={location} type="hospital" />
 
-              {/* Info */}
-              <div className="flex items-center gap-4 mb-4 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className={hospital.open ? 'text-primary font-medium' : 'text-destructive'}>
-                    {hospital.hours}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Navigation className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{location ? "Real-time" : hospital.time}</span>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-3">
-                <motion.a
-                  href={`tel:${hospital.phone}`}
-                  className="flex items-center justify-center gap-2 p-3 bg-secondary rounded-xl font-bold"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Phone className="w-5 h-5 text-primary" />
-                  <span>Call</span>
-                </motion.a>
-                <motion.button
-                  onClick={() => handleDirections(hospital.name)}
-                  className="flex items-center justify-center gap-2 p-3 bg-primary text-primary-foreground rounded-xl font-bold"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Navigation className="w-5 h-5" />
-                  <span>{t('hospital.directions')}</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={getLocation}
+                className="text-sm text-muted-foreground flex items-center gap-1 hover:text-primary"
+              >
+                <MapPin className="w-4 h-4" /> Update Location
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Emergency Note */}
         <motion.div

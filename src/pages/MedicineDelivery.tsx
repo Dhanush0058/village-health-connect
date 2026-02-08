@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog, Loader2, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '@/hooks/useLocation';
+import MapComponent from '@/components/MapComponent';
 
 const pickupPoints = [
   { name: 'Molo Village Center', distance: '2.5 km', status: 'Open now', icon: Store },
@@ -22,13 +23,7 @@ const MedicineDelivery = () => {
     getLocation();
   };
 
-  useEffect(() => {
-    if (location) {
-      const query = mode === 'human' ? 'pharmacies' : 'veterinary clinics';
-      const url = `https://www.google.com/maps/search/${query}/@${location.latitude},${location.longitude},14z`;
-      window.open(url, '_blank');
-    }
-  }, [location, mode]);
+  // Removed the useEffect that opened Google Maps, as MapComponent will handle display
 
   return (
     <Layout>
@@ -109,7 +104,7 @@ const MedicineDelivery = () => {
 
         {/* Nearby Pickup Points */}
         <motion.div
-          className="max-w-md mx-auto"
+          className="max-w-2xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -119,39 +114,59 @@ const MedicineDelivery = () => {
               <MapPin className="w-5 h-5 text-primary" />
               {t('medicine.pickup')}
             </h2>
-            <button
-              onClick={handleMapClick}
-              disabled={isLoading}
-              className="text-primary text-sm font-bold flex items-center gap-1 hover:underline disabled:opacity-50"
-            >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'MAP VIEW'}
-            </button>
+            {!location && (
+              <button
+                onClick={handleMapClick}
+                disabled={isLoading}
+                className="text-primary text-sm font-bold flex items-center gap-1 hover:underline disabled:opacity-50"
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'MAP VIEW'}
+              </button>
+            )}
           </div>
 
-          <div className="space-y-3">
-            {pickupPoints.map((point, index) => (
-              <motion.button
-                key={point.name}
-                className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border hover:border-primary transition-colors group"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleMapClick}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                    <point.icon className="w-6 h-6" />
+          {!location ? (
+            <div className="space-y-3 opacity-70">
+              <p className="text-center text-sm text-muted-foreground mb-4">Example Pharmacies (Click MAP VIEW for real ones)</p>
+              {pickupPoints.map((point, index) => (
+                <motion.button
+                  key={point.name}
+                  className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border hover:border-primary transition-colors group"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleMapClick}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                      <point.icon className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-bold">{point.name}</h4>
+                      <p className="text-sm text-muted-foreground">{point.distance} • {point.status}</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <h4 className="font-bold">{point.name}</h4>
-                    <p className="text-sm text-muted-foreground">{point.distance} • {point.status}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-              </motion.button>
-            ))}
-          </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
+                </motion.button>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <MapComponent userLocation={location} type={mode === 'human' ? 'pharmacy' : 'veterinary_care'} />
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={getLocation}
+                  className="text-sm text-muted-foreground flex items-center gap-1 hover:text-primary"
+                >
+                  <MapPin className="w-4 h-4" /> Update Location
+                </button>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Help Hotline */}
