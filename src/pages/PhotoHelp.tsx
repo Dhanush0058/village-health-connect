@@ -1,148 +1,257 @@
-import { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import Layout from '@/components/Layout';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Sun, Focus, ZoomIn, Phone, BookOpen, User, Dog } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { usePhotoAnalysis } from '@/hooks/usePhotoAnalysis';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Camera, Upload, User, Dog, Sun, Focus, ZoomIn, AlertTriangle, Volume2, VolumeX, Loader2, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 const PhotoHelp = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const { analyzePhoto, isAnalyzing, result, error, clearResult } = usePhotoAnalysis();
+  const { speak, stop, isSpeaking } = useTextToSpeech();
   const [mode, setMode] = useState<'human' | 'livestock'>('human');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target?.result as string;
+      setPreviewUrl(base64);
+      await analyzePhoto(base64, mode);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCapture = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleNewScan = () => {
+    setPreviewUrl(null);
+    clearResult();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const guides = [
-    { icon: Sun, title: t('photo.guide.light'), desc: 'Go outside or use a lamp', color: 'bg-yellow-100 text-yellow-600' },
-    { icon: Focus, title: t('photo.guide.focus'), desc: 'Hold still for 2 seconds', color: 'bg-health-blue/20 text-health-blue' },
-    { icon: ZoomIn, title: t('photo.guide.close'), desc: 'Keep the area in the center', color: 'bg-health-green-light text-primary' },
+    { icon: Sun, label: t('photo.guide.light'), color: 'text-warning' },
+    { icon: Focus, label: t('photo.guide.focus'), color: 'text-secondary' },
+    { icon: ZoomIn, label: t('photo.guide.close'), color: 'text-primary' },
   ];
 
   return (
-    <Layout>
+    <Layout showDisclaimer={false}>
       <div className="container mx-auto px-4 py-6">
-        {/* Back Button */}
-        <motion.button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 big-button bg-secondary"
-          whileTap={{ scale: 0.95 }}
-        >
-          <ArrowLeft className="w-6 h-6" />
-          <span>Back</span>
-        </motion.button>
-
-        {/* Title */}
-        <motion.div 
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('photo.title')}</h1>
-          <p className="text-lg text-muted-foreground">Send a photo to get medical advice quickly.</p>
-        </motion.div>
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">{t('photo.title')}</h1>
+        </div>
 
         {/* Mode Toggle */}
-        <motion.div 
-          className="flex bg-secondary p-1.5 rounded-full mb-8 max-w-sm mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="flex p-1.5 glass-card rounded-full mb-8 max-w-md mx-auto">
           <button
             onClick={() => setMode('human')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold text-lg transition-all ${
-              mode === 'human' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
-            }`}
+            className={`
+              flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-all
+              ${mode === 'human' 
+                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg' 
+                : 'text-muted-foreground'
+              }
+            `}
           >
-            <User className="w-6 h-6" />
-            {t('photo.human')}
+            <User className="w-5 h-5" />
+            <span>{t('photo.human')}</span>
           </button>
           <button
             onClick={() => setMode('livestock')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-bold text-lg transition-all ${
-              mode === 'livestock' ? 'bg-card shadow-md text-primary' : 'text-muted-foreground'
-            }`}
+            className={`
+              flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-all
+              ${mode === 'livestock' 
+                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg' 
+                : 'text-muted-foreground'
+              }
+            `}
           >
-            <Dog className="w-6 h-6" />
-            {t('photo.livestock')}
+            <Dog className="w-5 h-5" />
+            <span>{t('photo.livestock')}</span>
           </button>
-        </motion.div>
+        </div>
 
-        {/* Main Camera Button */}
-        <motion.div
-          className="flex flex-col items-center justify-center py-12 bg-card rounded-2xl shadow-xl border border-primary/20 mb-8 max-w-md mx-auto"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <motion.button 
-            className="flex flex-col items-center group"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <motion.div 
-              className="w-40 h-40 md:w-48 md:h-48 bg-primary rounded-full flex items-center justify-center shadow-2xl"
-              animate={{
-                boxShadow: [
-                  '0 0 0 0 rgba(19, 236, 91, 0)',
-                  '0 0 40px 10px rgba(19, 236, 91, 0.3)',
-                  '0 0 0 0 rgba(19, 236, 91, 0)',
-                ],
-              }}
-              transition={{ duration: 2.5, repeat: Infinity }}
+        <AnimatePresence mode="wait">
+          {!result && !previewUrl ? (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
             >
-              <Camera className="w-20 h-20 md:w-24 md:h-24 text-primary-foreground" />
-            </motion.div>
-            <span className="mt-6 text-2xl font-bold">{t('photo.take')}</span>
-            <span className="text-muted-foreground">Tap to start camera</span>
-          </motion.button>
-        </motion.div>
-
-        {/* Photo Guide */}
-        <div className="max-w-md mx-auto mb-8">
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <span className="text-primary">💡</span>
-            How to take a good photo
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            {guides.map((guide, index) => (
-              <motion.div
-                key={guide.title}
-                className="bg-card p-4 rounded-xl text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
+              {/* Camera Button */}
+              <div 
+                onClick={handleCapture}
+                className="glass-card p-12 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl hover:shadow-secondary/20 transition-all max-w-md mx-auto mb-8"
               >
-                <div className={`w-12 h-12 ${guide.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
-                  <guide.icon className="w-6 h-6" />
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-xl shadow-secondary/30 mb-6 transition-transform hover:scale-105">
+                  <Camera className="w-16 h-16 md:w-20 md:h-20 text-white" />
                 </div>
-                <p className="font-bold text-sm">{guide.title}</p>
-                <p className="text-xs text-muted-foreground mt-1">{guide.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                <span className="text-xl font-bold mb-2">{t('photo.take')}</span>
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Upload className="w-4 h-4" />
+                  <span>Tap to start camera or upload</span>
+                </div>
+              </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-          <motion.button
-            className="flex flex-col items-center gap-3 p-6 bg-primary text-primary-foreground rounded-2xl shadow-lg"
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Phone className="w-10 h-10" />
-            <span className="font-bold">Call Doctor</span>
-          </motion.button>
-          <motion.button
-            className="flex flex-col items-center gap-3 p-6 bg-card border-2 border-border rounded-2xl shadow-lg"
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <BookOpen className="w-10 h-10 text-primary" />
-            <span className="font-bold">First Aid Steps</span>
-          </motion.button>
-        </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              {/* Photo Guides */}
+              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+                {guides.map((guide) => (
+                  <div 
+                    key={guide.label}
+                    className="glass-card p-4 rounded-2xl flex flex-col items-center text-center"
+                  >
+                    <div className={`w-12 h-12 rounded-full bg-surface-sunken flex items-center justify-center mb-3 ${guide.color}`}>
+                      <guide.icon className="w-6 h-6" />
+                    </div>
+                    <span className="text-sm font-medium">{guide.label}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ) : isAnalyzing ? (
+            <motion.div
+              key="analyzing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-12"
+            >
+              {previewUrl && (
+                <div className="w-48 h-48 mx-auto mb-8 rounded-3xl overflow-hidden shadow-xl">
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="glass-card p-8 rounded-3xl max-w-md mx-auto">
+                <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-secondary" />
+                <p className="text-lg font-semibold">{t('photo.analyzing')}</p>
+                <p className="text-muted-foreground mt-2">Please wait while our AI analyzes your photo...</p>
+              </div>
+            </motion.div>
+          ) : result ? (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="max-w-2xl mx-auto"
+            >
+              {previewUrl && (
+                <div className="w-full max-w-md mx-auto mb-6 rounded-3xl overflow-hidden shadow-xl">
+                  <img src={previewUrl} alt="Analyzed" className="w-full h-auto" />
+                </div>
+              )}
+
+              {/* Urgency Banner */}
+              {result.urgency === 'emergency' && (
+                <div className="bg-destructive text-white p-4 rounded-2xl flex items-center gap-3 mb-6">
+                  <AlertTriangle className="w-6 h-6 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold">Seek Immediate Medical Attention</p>
+                    <p className="text-sm opacity-90">This may require emergency care</p>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/emergency')}
+                    variant="secondary"
+                    className="ml-auto rounded-full"
+                  >
+                    Emergency
+                  </Button>
+                </div>
+              )}
+
+              {/* Analysis Result */}
+              <div className="glass-card p-6 rounded-3xl mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">{t('photo.result')}</h2>
+                  <button
+                    onClick={() => isSpeaking ? stop() : speak(result.analysis, language)}
+                    className="flex items-center gap-2 text-secondary hover:text-primary transition-colors"
+                  >
+                    {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    <span className="text-sm">{t('speak')}</span>
+                  </button>
+                </div>
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>{result.analysis}</ReactMarkdown>
+                </div>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="glass-card p-4 rounded-2xl bg-warning/10 border border-warning/30 mb-6">
+                <p className="text-sm text-center text-muted-foreground">
+                  {result.disclaimer}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <Button
+                  onClick={handleNewScan}
+                  variant="outline"
+                  className="flex-1 rounded-full h-14"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  New Scan
+                </Button>
+                <Button
+                  onClick={() => navigate('/doctor')}
+                  className="flex-1 rounded-full h-14 bg-gradient-to-r from-primary to-secondary"
+                >
+                  Talk to Doctor
+                </Button>
+              </div>
+            </motion.div>
+          ) : error ? (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
+              <div className="glass-card p-8 rounded-3xl max-w-md mx-auto">
+                <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+                <p className="text-lg font-semibold text-destructive">{error}</p>
+                <Button onClick={handleNewScan} className="mt-6 rounded-full">
+                  {t('retry')}
+                </Button>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </Layout>
   );

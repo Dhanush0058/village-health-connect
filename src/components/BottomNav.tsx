@@ -15,8 +15,8 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-      <div className="flex justify-around py-2 px-4 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-card rounded-none border-t border-white/20">
+      <div className="flex justify-around py-3 px-4 pb-safe">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -24,11 +24,14 @@ const BottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={`bottom-nav-item min-w-[64px] ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-secondary' : 'text-muted-foreground'
               }`}
               whileTap={{ scale: 0.9 }}
             >
-              <item.icon className="w-7 h-7" strokeWidth={isActive ? 2.5 : 2} />
+              <item.icon 
+                className={`w-7 h-7 ${isActive ? 'drop-shadow-lg' : ''}`} 
+                strokeWidth={isActive ? 2.5 : 2} 
+              />
               <span className="text-xs font-bold">{item.label}</span>
             </motion.button>
           );

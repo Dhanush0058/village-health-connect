@@ -1,60 +1,76 @@
-import { useLanguage, languages } from '@/contexts/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useLanguage, languages } from '@/contexts/LanguageContext';
+import { Heart, AlertTriangle, Globe, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
-  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const { language, setLanguage, t, isLoading } = useLanguage();
+  const currentLang = languages.find(l => l.code === language);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          {/* Logo */}
-          <button 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-          >
-            <div className="p-2 bg-primary rounded-full">
-              <Shield className="w-6 h-6 text-primary-foreground" />
-            </div>
+    <header className="sticky top-0 z-50 w-full glass-card rounded-none border-b border-white/20">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        {/* Logo */}
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+            <Heart className="w-6 h-6 text-white" fill="white" />
+          </div>
+          <div className="hidden sm:block">
             <h1 className="text-xl font-bold tracking-tight">{t('app.name')}</h1>
-          </button>
+          </div>
+        </button>
 
-          <div className="flex items-center gap-3 justify-between md:justify-end">
-            {/* Language Switcher */}
-            <div className="flex items-center gap-1 bg-secondary p-1 rounded-full overflow-x-auto">
+        {/* Right Actions */}
+        <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2 rounded-full px-4 h-12 glass-card border-white/30"
+                disabled={isLoading}
+              >
+                <Globe className="w-5 h-5" />
+                <span className="hidden sm:inline">{currentLang?.flag} {currentLang?.short}</span>
+                <span className="sm:hidden">{currentLang?.flag}</span>
+                <ChevronDown className="w-4 h-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 glass-card border-white/20">
               {languages.map((lang) => (
-                <motion.button
+                <DropdownMenuItem
                   key={lang.code}
                   onClick={() => setLanguage(lang.code)}
-                  className={`language-pill whitespace-nowrap ${
-                    language === lang.code ? 'language-pill-active' : 'hover:bg-card/50'
-                  }`}
-                  whileTap={{ scale: 0.95 }}
+                  className={`gap-3 py-3 cursor-pointer ${language === lang.code ? 'bg-secondary/20' : ''}`}
                 >
-                  <span className="hidden sm:inline">{lang.label}</span>
-                  <span className="sm:hidden">{lang.short}</span>
-                </motion.button>
+                  <span className="text-xl">{lang.flag}</span>
+                  <span className="font-medium">{lang.label}</span>
+                </DropdownMenuItem>
               ))}
-            </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            {/* Emergency Button */}
-            <motion.button
+          {/* Emergency Button */}
+          {location.pathname !== '/emergency' && (
+            <Button
               onClick={() => navigate('/emergency')}
-              className="emergency-button"
-              whileTap={{ scale: 0.95 }}
-              animate={{ 
-                boxShadow: ['0 0 0 0 rgba(239, 68, 68, 0)', '0 0 0 8px rgba(239, 68, 68, 0.2)', '0 0 0 0 rgba(239, 68, 68, 0)']
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="emergency-button rounded-full h-12 px-6"
             >
               <AlertTriangle className="w-5 h-5" />
-              <span className="hidden sm:inline">{t('emergency')}</span>
-            </motion.button>
-          </div>
+              <span className="hidden sm:inline font-bold">{t('emergency')}</span>
+            </Button>
+          )}
         </div>
       </div>
     </header>
