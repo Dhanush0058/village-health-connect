@@ -2,105 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
+@import '@fontsource/plus-jakarta-sans/300.css';
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
+@import '@fontsource/plus-jakarta-sans/800.css';
 
 @layer base {
   :root {
-    /* Rural Health - Calm, Trust-Building Design System */
-    --background: 120 10% 97%;
-    --foreground: 150 30% 8%;
+    /* RuralCare Premium - Deep Teal Design System */
+    --background: 180 15% 97%;
+    --foreground: 180 50% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 150 30% 8%;
+    --card-foreground: 180 50% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 30% 8%;
+    --popover-foreground: 180 50% 10%;
 
-    /* Primary Green - Trust & Health */
-    --primary: 145 90% 50%;
-    --primary-foreground: 150 30% 8%;
+    /* Primary - Deep Teal */
+    --primary: 178 70% 17%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Soft sage */
-    --secondary: 140 15% 92%;
-    --secondary-foreground: 150 30% 15%;
+    /* Secondary - Medical Teal */
+    --secondary: 168 70% 40%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 140 10% 94%;
-    --muted-foreground: 150 10% 45%;
+    --muted: 180 10% 92%;
+    --muted-foreground: 180 15% 45%;
 
-    --accent: 145 80% 45%;
+    /* Accent - Medical Teal */
+    --accent: 168 70% 40%;
     --accent-foreground: 0 0% 100%;
 
     /* Emergency Red */
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 140 15% 88%;
-    --input: 140 15% 88%;
-    --ring: 145 90% 50%;
+    --border: 180 15% 88%;
+    --input: 180 15% 88%;
+    --ring: 178 70% 17%;
 
-    --radius: 1rem;
+    --radius: 2rem;
 
     /* Custom tokens */
-    --health-green: 145 90% 50%;
-    --health-green-light: 145 70% 92%;
-    --health-blue: 210 90% 55%;
-    --health-orange: 30 95% 55%;
+    --teal-deep: 178 70% 17%;
+    --teal-medical: 168 70% 40%;
+    --teal-light: 168 70% 92%;
     --emergency-red: 0 75% 55%;
     --emergency-red-light: 0 90% 95%;
+    --success: 168 70% 40%;
+    --warning: 38 92% 50%;
+    
+    /* Glass morphism */
+    --glass-bg: 180 15% 100% / 0.7;
+    --glass-border: 180 15% 90% / 0.5;
     
     --surface-elevated: 0 0% 100%;
-    --surface-sunken: 120 10% 95%;
+    --surface-sunken: 180 10% 95%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-primary: 178 70% 17%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 168 70% 95%;
+    --sidebar-accent-foreground: 178 70% 17%;
+    --sidebar-border: 180 15% 91%;
+    --sidebar-ring: 178 70% 17%;
   }
 
   .dark {
-    --background: 150 25% 8%;
-    --foreground: 140 20% 95%;
+    --background: 180 40% 6%;
+    --foreground: 180 15% 95%;
 
-    --card: 150 20% 12%;
-    --card-foreground: 140 20% 95%;
+    --card: 180 35% 10%;
+    --card-foreground: 180 15% 95%;
 
-    --popover: 150 20% 12%;
-    --popover-foreground: 140 20% 95%;
+    --popover: 180 35% 10%;
+    --popover-foreground: 180 15% 95%;
 
-    --primary: 145 90% 50%;
-    --primary-foreground: 150 30% 8%;
+    --primary: 168 70% 40%;
+    --primary-foreground: 180 40% 6%;
 
-    --secondary: 150 15% 18%;
-    --secondary-foreground: 140 20% 90%;
+    --secondary: 178 70% 25%;
+    --secondary-foreground: 180 15% 95%;
 
-    --muted: 150 15% 18%;
-    --muted-foreground: 140 10% 60%;
+    --muted: 180 30% 15%;
+    --muted-foreground: 180 10% 60%;
 
-    --accent: 145 80% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 168 70% 40%;
+    --accent-foreground: 180 40% 6%;
 
     --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 15% 20%;
-    --input: 150 15% 20%;
-    --ring: 145 90% 50%;
+    --border: 180 25% 18%;
+    --input: 180 25% 18%;
+    --ring: 168 70% 40%;
     
-    --surface-elevated: 150 20% 14%;
-    --surface-sunken: 150 25% 6%;
+    --teal-deep: 178 70% 25%;
+    --teal-medical: 168 70% 40%;
+    --teal-light: 168 50% 15%;
+    
+    --glass-bg: 180 35% 10% / 0.8;
+    --glass-border: 180 25% 20% / 0.5;
+    
+    --surface-elevated: 180 35% 12%;
+    --surface-sunken: 180 40% 5%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 180 40% 8%;
+    --sidebar-foreground: 180 15% 95%;
+    --sidebar-primary: 168 70% 40%;
+    --sidebar-primary-foreground: 180 40% 6%;
+    --sidebar-accent: 180 30% 15%;
+    --sidebar-accent-foreground: 180 15% 95%;
+    --sidebar-border: 180 25% 18%;
+    --sidebar-ring: 168 70% 40%;
   }
 }
 
@@ -115,34 +133,79 @@
 }
 
 @layer components {
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-white/70 dark:bg-card/80 backdrop-blur-xl 
+           border border-white/50 dark:border-white/10
+           shadow-xl rounded-[2rem];
+  }
+  
   .service-card {
-    @apply flex flex-col items-center justify-center p-6 bg-card rounded-2xl border-4 border-transparent 
-           shadow-lg transition-all duration-200 active:scale-95 hover:border-primary hover:shadow-xl;
+    @apply flex flex-col items-center justify-center p-8 
+           glass-card
+           transition-all duration-300 
+           active:scale-95 
+           hover:shadow-2xl hover:shadow-secondary/20
+           hover:-translate-y-1;
   }
   
   .service-icon {
-    @apply w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110;
+    @apply w-24 h-24 rounded-full flex items-center justify-center mb-4 
+           transition-all duration-300 group-hover:scale-110
+           bg-gradient-to-br from-secondary to-primary;
   }
   
   .big-button {
-    @apply min-h-[64px] px-8 py-4 text-lg font-bold rounded-full transition-all duration-200 active:scale-95;
+    @apply min-h-[72px] px-10 py-5 text-xl font-bold rounded-full 
+           transition-all duration-300 active:scale-95
+           shadow-lg hover:shadow-xl;
   }
   
   .emergency-button {
     @apply bg-destructive text-destructive-foreground font-bold rounded-full 
-           flex items-center gap-2 px-6 py-3 shadow-lg animate-pulse-slow;
+           flex items-center gap-3 px-8 py-4 
+           shadow-lg shadow-destructive/30
+           hover:shadow-xl hover:shadow-destructive/40
+           transition-all duration-300;
   }
   
   .language-pill {
-    @apply px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200;
+    @apply px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300;
   }
   
   .language-pill-active {
-    @apply bg-card shadow-md font-bold;
+    @apply bg-white dark:bg-card shadow-lg font-bold;
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-1 p-2 rounded-xl transition-colors;
+    @apply flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all duration-300;
+  }
+
+  /* Teal gradient backgrounds */
+  .teal-gradient {
+    @apply bg-gradient-to-br from-primary to-secondary;
+  }
+  
+  .teal-gradient-light {
+    @apply bg-gradient-to-br from-secondary/10 to-primary/5;
+  }
+
+  /* AI Chat specific */
+  .chat-bubble {
+    @apply px-5 py-4 rounded-3xl max-w-[85%] shadow-sm;
+  }
+  
+  .chat-bubble-user {
+    @apply bg-primary text-primary-foreground ml-auto rounded-br-lg;
+  }
+  
+  .chat-bubble-ai {
+    @apply glass-card mr-auto rounded-bl-lg;
+  }
+
+  /* Audio visualizer */
+  .audio-bar {
+    @apply w-1 bg-secondary rounded-full transition-all duration-75;
   }
 }
 
@@ -153,7 +216,47 @@
   
   @keyframes pulse-slow {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
+    50% { opacity: 0.7; }
+  }
+
+  .animate-wave {
+    animation: wave 1.5s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1); }
+  }
+
+  /* Staggered wave animation for audio visualizer */
+  .animate-wave-1 { animation-delay: 0ms; }
+  .animate-wave-2 { animation-delay: 100ms; }
+  .animate-wave-3 { animation-delay: 200ms; }
+  .animate-wave-4 { animation-delay: 300ms; }
+  .animate-wave-5 { animation-delay: 400ms; }
+  
+  /* Safe area padding for iOS */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
