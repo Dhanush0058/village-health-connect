@@ -54,11 +54,11 @@
     --emergency-red-light: 0 90% 95%;
     --success: 168 70% 40%;
     --warning: 38 92% 50%;
-
+    
     /* Glass morphism */
     --glass-bg: 180 15% 100% / 0.7;
     --glass-border: 180 15% 90% / 0.5;
-
+    
     --surface-elevated: 0 0% 100%;
     --surface-sunken: 180 10% 95%;
 
@@ -100,14 +100,14 @@
     --border: 180 25% 18%;
     --input: 180 25% 18%;
     --ring: 168 70% 40%;
-
+    
     --teal-deep: 178 70% 25%;
     --teal-medical: 168 70% 40%;
     --teal-light: 168 50% 15%;
-
+    
     --glass-bg: 180 35% 10% / 0.8;
     --glass-border: 180 25% 20% / 0.5;
-
+    
     --surface-elevated: 180 35% 12%;
     --surface-sunken: 180 40% 5%;
 
@@ -133,36 +133,50 @@
 }
 
 @layer components {
-
   /* Glass card effect */
   .glass-card {
-    @apply bg-white/70 dark:bg-card/80 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-xl rounded-[2rem];
+    @apply bg-white/70 dark:bg-card/80 backdrop-blur-xl 
+           border border-white/50 dark:border-white/10
+           shadow-xl rounded-[2rem];
   }
-
+  
   .service-card {
-    @apply flex flex-col items-center justify-center p-8 glass-card transition-all duration-300 active:scale-95 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1;
+    @apply flex flex-col items-center justify-center p-8 
+           glass-card
+           transition-all duration-300 
+           active:scale-95 
+           hover:shadow-2xl hover:shadow-secondary/20
+           hover:-translate-y-1;
   }
-
+  
   .service-icon {
-    @apply w-24 h-24 rounded-full flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 bg-gradient-to-br from-secondary to-primary;
+    @apply w-24 h-24 rounded-full flex items-center justify-center mb-4 
+           transition-all duration-300 group-hover:scale-110
+           bg-gradient-to-br from-secondary to-primary;
   }
-
+  
   .big-button {
-    @apply min-h-[72px] px-10 py-5 text-xl font-bold rounded-full transition-all duration-300 active:scale-95 shadow-lg hover:shadow-xl;
+    @apply min-h-[72px] px-10 py-5 text-xl font-bold rounded-full 
+           transition-all duration-300 active:scale-95
+           shadow-lg hover:shadow-xl;
   }
-
+  
   .emergency-button {
-    @apply bg-destructive text-destructive-foreground font-bold rounded-full flex items-center gap-3 px-8 py-4 shadow-lg shadow-destructive/30 hover:shadow-xl hover:shadow-destructive/40 transition-all duration-300;
+    @apply bg-destructive text-destructive-foreground font-bold rounded-full 
+           flex items-center gap-3 px-8 py-4 
+           shadow-lg shadow-destructive/30
+           hover:shadow-xl hover:shadow-destructive/40
+           transition-all duration-300;
   }
-
+  
   .language-pill {
     @apply px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300;
   }
-
+  
   .language-pill-active {
     @apply bg-white dark:bg-card shadow-lg font-bold;
   }
-
+  
   .bottom-nav-item {
     @apply flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all duration-300;
   }
@@ -171,7 +185,7 @@
   .teal-gradient {
     @apply bg-gradient-to-br from-primary to-secondary;
   }
-
+  
   .teal-gradient-light {
     @apply bg-gradient-to-br from-secondary/10 to-primary/5;
   }
@@ -180,11 +194,11 @@
   .chat-bubble {
     @apply px-5 py-4 rounded-3xl max-w-[85%] shadow-sm;
   }
-
+  
   .chat-bubble-user {
     @apply bg-primary text-primary-foreground ml-auto rounded-br-lg;
   }
-
+  
   .chat-bubble-ai {
     @apply glass-card mr-auto rounded-bl-lg;
   }
@@ -199,17 +213,10 @@
   .animate-pulse-slow {
     animation: pulse-slow 3s ease-in-out infinite;
   }
-
+  
   @keyframes pulse-slow {
-
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0.7;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
   }
 
   .animate-wave {
@@ -217,58 +224,37 @@
   }
 
   @keyframes wave {
-
-    0%,
-    100% {
-      transform: scaleY(0.5);
-    }
-
-    50% {
-      transform: scaleY(1);
-    }
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1); }
   }
 
   /* Staggered wave animation for audio visualizer */
-  .animate-wave-1 {
-    animation-delay: 0ms;
-  }
-
-  .animate-wave-2 {
-    animation-delay: 100ms;
-  }
-
-  .animate-wave-3 {
-    animation-delay: 200ms;
-  }
-
-  .animate-wave-4 {
-    animation-delay: 300ms;
-  }
-
-  .animate-wave-5 {
-    animation-delay: 400ms;
-  }
-
+  .animate-wave-1 { animation-delay: 0ms; }
+  .animate-wave-2 { animation-delay: 100ms; }
+  .animate-wave-3 { animation-delay: 200ms; }
+  .animate-wave-4 { animation-delay: 300ms; }
+  .animate-wave-5 { animation-delay: 400ms; }
+  
   /* Safe area padding for iOS */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0.5rem);
   }
-
+  
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0);
   }
-
+  
   /* Smooth scrolling */
   .scroll-smooth {
     scroll-behavior: smooth;
   }
-
+  
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
+  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -278,113 +264,14 @@
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
-
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--muted-foreground) / 0.2);
     border-radius: 9999px;
   }
-
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground) / 0.4);
-  }
-}
-
-@layer utilities {
-  .animate-delay-200 {
-    animation-delay: 0.2s;
-  }
-
-  .animate-delay-400 {
-    animation-delay: 0.4s;
-  }
-
-  .animate-delay-600 {
-    animation-delay: 0.6s;
-  }
-
-  .animate-delay-800 {
-    animation-delay: 0.8s;
-  }
-
-  .animate-delay-1000 {
-    animation-delay: 1.0s;
-  }
-
-  .animate-delay-1200 {
-    animation-delay: 1.2s;
-  }
-
-  .glass-effect {
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(40px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slideLeft {
-    from {
-      opacity: 0;
-      transform: translateX(40px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.8s ease-out forwards;
-  }
-
-  .animate-slide-left {
-    animation: slideLeft 0.8s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.6s ease-out forwards;
   }
 }
