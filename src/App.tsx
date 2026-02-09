@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { LanguageSelectionScreen } from "@/components/LanguageSelectionScreen";
-import Index from "./pages/Index";
+// import Index from "./pages/Index"; // Keeping for reference if needed, but replaced by MedCoreLanding
+import MedCoreLanding from "./pages/MedCoreLanding";
 import DoctorConsult from "./pages/DoctorConsult";
 import AnimalHealth from "./pages/AnimalHealth";
 import PhotoHelp from "./pages/PhotoHelp";
@@ -27,7 +28,7 @@ const App = () => (
         <LanguageSelectionScreen />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<MedCoreLanding />} />
             <Route path="/doctor" element={<DoctorConsult />} />
             <Route path="/animal" element={<AnimalHealth />} />
             <Route path="/photo" element={<PhotoHelp />} />
