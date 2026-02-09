@@ -11,6 +11,8 @@ import PhotoHelp from "./pages/PhotoHelp";
 import MedicineDelivery from "./pages/MedicineDelivery";
 import NearbyHospitals from "./pages/NearbyHospitals";
 import Emergency from "./pages/Emergency";
+import Profile from "./pages/Profile";
+import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/medicine" element={<MedicineDelivery />} />
             <Route path="/hospital" element={<NearbyHospitals />} />
             <Route path="/emergency" element={<Emergency />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/alerts" element={<Alerts />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

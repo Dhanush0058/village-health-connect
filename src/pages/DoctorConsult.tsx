@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAIChat } from '@/hooks/useAIChat';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
@@ -11,14 +11,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import '@/types/speech-recognition.d';
 
+interface LocationState {
+  initialMessage?: string;
+}
+
 const DoctorConsult = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as LocationState | null;
   const { t, language } = useLanguage();
   const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
   const { speak, stop, isSpeaking } = useTextToSpeech();
   const [input, setInput] = useState('');
   const [activeTab, setActiveTab] = useState<'chat' | 'voice' | 'video'>('chat');
   const [isListening, setIsListening] = useState(false);
+  const [hasSentInitial, setHasSentInitial] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<InstanceType<NonNullable<typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition>> | null>(null);
 
@@ -29,6 +36,16 @@ const DoctorConsult = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle initial message from voice button
+  useEffect(() => {
+    if (locationState?.initialMessage && !hasSentInitial && messages.length === 0) {
+      setHasSentInitial(true);
+      sendMessage(locationState.initialMessage);
+      // Clear the location state to prevent resending on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [locationState?.initialMessage, hasSentInitial, messages.length, sendMessage]);
 
   // Initialize speech recognition
   useEffect(() => {
