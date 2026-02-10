@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,83 +24,26 @@ export const useAIChat = () => {
     setError(null);
 
     try {
-      abortControllerRef.current = new AbortController();
-      
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: [...messages, userMessage],
-            language,
-          }),
-          signal: abortControllerRef.current.signal,
-        }
-      );
+      // Import dynamically to avoid circular dependencies if any, though likely not needed here but good practice
+      const { getGeminiResponse } = await import('../services/gemini');
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get response');
-      }
+      // Prepare history for the service
+      // The service expects { role: 'user' | 'assistant', content: string }
+      // We pass the current messages + the new user message
+      // Note: 'system' role is handled internally by the service for now or we can adapt if needed
+      const history = [...messages, userMessage].map(m => ({
+        role: m.role as 'user' | 'assistant' | 'system',
+        content: m.content
+      }));
 
-      if (!response.body) {
-        throw new Error('No response body');
-      }
+      const responseText = await getGeminiResponse(content, history, `User Language: ${language}`);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let assistantContent = '';
-      let textBuffer = '';
+      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
 
-      // Add empty assistant message to update
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const delta = parsed.choices?.[0]?.delta?.content;
-            if (delta) {
-              assistantContent += delta;
-              setMessages(prev => {
-                const updated = [...prev];
-                updated[updated.length - 1] = { role: 'assistant', content: assistantContent };
-                return updated;
-              });
-            }
-          } catch {
-            // Incomplete JSON, put back and wait
-            textBuffer = line + '\n' + textBuffer;
-            break;
-          }
-        }
-      }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
       console.error('Chat error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      setMessages(prev => [...prev, { role: 'assistant', content: "I apologize, but I am having trouble connecting right now. Please try again later." }]);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +55,9 @@ export const useAIChat = () => {
   }, []);
 
   const stopGeneration = useCallback(() => {
-    abortControllerRef.current?.abort();
+    // Gemini SDK doesn't support aborting mid-flight easily in this simple implementation
+    // We just set loading to false to "stop" the UI
+    setIsLoading(false);
   }, []);
 
   return {
