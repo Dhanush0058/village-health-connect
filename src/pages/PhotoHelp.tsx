@@ -5,7 +5,7 @@ import { usePhotoAnalysis } from '@/hooks/usePhotoAnalysis';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Camera, Upload, User, Dog, Sun, Focus, ZoomIn, AlertTriangle, Volume2, VolumeX, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, User, Sun, Focus, ZoomIn, AlertTriangle, Volume2, VolumeX, Loader2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -14,7 +14,7 @@ const PhotoHelp = () => {
   const { t, language } = useLanguage();
   const { analyzePhoto, isAnalyzing, result, error, clearResult } = usePhotoAnalysis();
   const { speak, stop, isSpeaking } = useTextToSpeech();
-  const [mode, setMode] = useState<'human' | 'livestock'>('human');
+  const mode = 'human';
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,35 +65,7 @@ const PhotoHelp = () => {
           <h1 className="text-2xl font-bold">{t('photo.title')}</h1>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="flex p-1.5 glass-card rounded-full mb-8 max-w-md mx-auto">
-          <button
-            onClick={() => setMode('human')}
-            className={`
-              flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-all
-              ${mode === 'human' 
-                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg' 
-                : 'text-muted-foreground'
-              }
-            `}
-          >
-            <User className="w-5 h-5" />
-            <span>{t('photo.human')}</span>
-          </button>
-          <button
-            onClick={() => setMode('livestock')}
-            className={`
-              flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-all
-              ${mode === 'livestock' 
-                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg' 
-                : 'text-muted-foreground'
-              }
-            `}
-          >
-            <Dog className="w-5 h-5" />
-            <span>{t('photo.livestock')}</span>
-          </button>
-        </div>
+
 
         <AnimatePresence mode="wait">
           {!result && !previewUrl ? (
@@ -104,7 +76,7 @@ const PhotoHelp = () => {
               exit={{ opacity: 0, y: -20 }}
             >
               {/* Camera Button */}
-              <div 
+              <div
                 onClick={handleCapture}
                 className="glass-card p-12 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl hover:shadow-secondary/20 transition-all max-w-md mx-auto mb-8"
               >
@@ -130,7 +102,7 @@ const PhotoHelp = () => {
               {/* Photo Guides */}
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
                 {guides.map((guide) => (
-                  <div 
+                  <div
                     key={guide.label}
                     className="glass-card p-4 rounded-2xl flex flex-col items-center text-center"
                   >
@@ -183,7 +155,7 @@ const PhotoHelp = () => {
                     <p className="font-bold">Seek Immediate Medical Attention</p>
                     <p className="text-sm opacity-90">This may require emergency care</p>
                   </div>
-                  <Button 
+                  <Button
                     onClick={() => navigate('/emergency')}
                     variant="secondary"
                     className="ml-auto rounded-full"

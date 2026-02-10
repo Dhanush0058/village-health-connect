@@ -3,11 +3,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/Layout';
 import ServiceCard from '@/components/ServiceCard';
 import { motion } from 'framer-motion';
-import { 
-  Stethoscope, 
-  Dog, 
-  Pill, 
-  Camera, 
+import {
+  Stethoscope,
+
+  Pill,
+  Camera,
   MapPin,
 } from 'lucide-react';
 
@@ -23,13 +23,7 @@ const Index = () => {
       path: '/doctor',
       gradient: 'from-primary to-secondary',
     },
-    {
-      icon: Dog,
-      title: t('service.animal'),
-      description: t('service.animal.desc'),
-      path: '/animal',
-      gradient: 'from-secondary to-teal-medical',
-    },
+
     {
       icon: Pill,
       title: t('service.medicine'),
@@ -57,7 +51,7 @@ const Index = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Hero Section */}
-        <motion.div 
+        <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

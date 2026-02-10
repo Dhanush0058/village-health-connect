@@ -1,6 +1,6 @@
 import { useLanguage, languages } from '@/contexts/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, AlertTriangle, Globe } from 'lucide-react';
+import { Shield, AlertTriangle, Globe, Dog } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header = () => {
@@ -23,6 +23,30 @@ const Header = () => {
             <h1 className="text-xl font-bold tracking-tight">GramHealth</h1>
 
           </button>
+
+          {/* Navigation Toggles */}
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-full border border-border/50">
+            <button
+              onClick={() => navigate('/')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all text-sm font-medium ${location.pathname !== '/animal'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              <Shield className="w-4 h-4" />
+              <span>Human</span>
+            </button>
+            <button
+              onClick={() => navigate('/animal')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all text-sm font-medium ${location.pathname === '/animal'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              <Dog className="w-4 h-4" />
+              <span>Animal</span>
+            </button>
+          </div>
 
           <div className="flex items-center gap-3 justify-between md:justify-end">
             {/* Language Switcher */}

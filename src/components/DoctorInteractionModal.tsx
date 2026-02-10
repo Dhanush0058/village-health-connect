@@ -41,7 +41,13 @@ export const DoctorInteractionModal = ({ isOpen, onClose, type }: DoctorInteract
                 }
             }, 1500); // 1.5 seconds to connect
 
-            return () => clearTimeout(timer);
+            return () => {
+                clearTimeout(timer);
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            };
+        } else {
+            // Also ensure speech stops if modal is closed (isOpen becomes false)
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
     }, [isOpen, type]);
 
@@ -216,14 +222,16 @@ export const DoctorInteractionModal = ({ isOpen, onClose, type }: DoctorInteract
                 History: ${messages.slice(-4).map(m => m.sender + ": " + m.text).join(' | ')}
             `;
 
-            const aiText = await getGeminiResponse(userText, context);
+            const aiText = await getGeminiResponse(userText, [], context);
 
             if (aiText) {
                 setMessages(prev => [...prev, {
                     text: aiText,
                     sender: 'doctor'
                 }]);
-                speakText(aiText);
+                if (type === 'audio' || type === 'video') {
+                    speakText(aiText);
+                }
 
                 // Update state heuristically
                 if (conversationStep === 'GREETING') setConversationStep('SYMPTOM_CHECK');
@@ -315,7 +323,7 @@ export const DoctorInteractionModal = ({ isOpen, onClose, type }: DoctorInteract
                 // Call Real AI for Voice Logic
                 import('../services/gemini').then(async ({ getGeminiResponse }) => {
                     const context = `Spoken Interaction. Step: ${currentStep}. Symptom: ${currentSymp}`;
-                    const aiText = await getGeminiResponse(transcript, context);
+                    const aiText = await getGeminiResponse(transcript, [], context);
 
                     if (aiText) {
                         speakText(aiText);

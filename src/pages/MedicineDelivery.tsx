@@ -1,11 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { db } from '@/config/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog, Loader2, Map } from 'lucide-react';
+import { ArrowLeft, Camera, Mic, MapPin, Store, Building, ChevronRight, Phone, User, Dog, Loader2, StopCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '@/hooks/useLocation';
 import MapComponent from '@/components/MapComponent';
+import { toast } from "sonner";
+import { analyzeImage } from '@/services/gemini';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import ReactMarkdown from 'react-markdown';
 
 const pickupPoints = [
   { name: 'Molo Village Center', distance: '2.5 km', status: 'Open now', icon: Store },
@@ -17,13 +29,72 @@ const MedicineDelivery = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'human' | 'livestock'>('human');
+  const [isRecording, setIsRecording] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { location, getLocation, isLoading } = useLocation();
 
   const handleMapClick = () => {
     getLocation();
   };
 
-  // Removed the useEffect that opened Google Maps, as MapComponent will handle display
+  const handleUploadClick = () => {
+    console.log("Upload button clicked");
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File selected");
+    const file = e.target.files?.[0];
+    if (file) {
+      // 1. Show loading toast
+      const toastId = toast.loading("Processing prescription...");
+      setIsAnalyzing(true);
+      setAnalysisResult(null);
+
+      try {
+        // 2. Convert to Base64
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64String = reader.result as string;
+          const base64Content = base64String.split(',')[1]; // Remove prefix
+
+          // 3. Analyze with Gemini
+          const result = await analyzeImage(base64Content);
+
+          setAnalysisResult(result);
+          toast.success("Analysis Complete", { id: toastId });
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to analyze image", { id: toastId });
+      } finally {
+        setIsAnalyzing(false);
+        e.target.value = ''; // Reset input
+      }
+    }
+  };
+
+  const handleVoiceClick = () => {
+    console.log("Voice button clicked, current state:", isRecording);
+    if (isRecording) {
+      setIsRecording(false);
+      toast.success("Voice Message Sent", {
+        description: "Your audio message has been sent to the pharmacist.",
+      });
+    } else {
+      setIsRecording(true);
+      toast("Recording Started...", {
+        description: "Speak clearly. Tap again to stop and send.",
+        action: {
+          label: "Stop",
+          onClick: () => setIsRecording(false)
+        },
+      });
+    }
+  };
 
   return (
     <Layout>
@@ -72,8 +143,17 @@ const MedicineDelivery = () => {
         </motion.div>
 
         {/* Upload Prescription */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*,.pdf"
+          capture="environment"
+          onChange={handleFileChange}
+        />
         <motion.button
-          className="w-full flex flex-col items-center gap-4 p-8 bg-primary text-primary-foreground rounded-2xl shadow-xl mb-6 max-w-md mx-auto"
+          onClick={handleUploadClick}
+          className="w-full flex flex-col items-center gap-4 p-8 bg-primary text-primary-foreground rounded-2xl shadow-xl mb-6 max-w-md mx-auto hover:bg-primary/90 transition-colors"
           whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -89,14 +169,20 @@ const MedicineDelivery = () => {
 
         {/* Voice Message */}
         <motion.button
-          className="w-full flex items-center justify-center gap-4 h-20 bg-card border-2 border-primary rounded-full mb-2 max-w-md mx-auto"
+          onClick={handleVoiceClick}
+          className={`w-full flex items-center justify-center gap-4 h-20 border-2 rounded-full mb-2 max-w-md mx-auto transition-colors ${isRecording
+            ? 'bg-red-50 border-red-500 text-red-600 animate-pulse'
+            : 'bg-card border-primary text-foreground hover:bg-secondary'
+            }`}
           whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Mic className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold">{t('medicine.voice')}</span>
+          {isRecording ? <StopCircle className="w-8 h-8" /> : <Mic className="w-8 h-8 text-primary" />}
+          <span className="text-xl font-bold">
+            {isRecording ? "Tap to Stop & Send" : t('medicine.voice')}
+          </span>
         </motion.button>
         <p className="text-center text-muted-foreground text-sm mb-8 max-w-md mx-auto">
           Use this if you cannot type or have no paper prescription
@@ -180,6 +266,29 @@ const MedicineDelivery = () => {
           <p className="text-muted-foreground text-sm">Need help? Call for free at</p>
           <p className="text-2xl font-bold text-primary">0800 123 456</p>
         </motion.div>
+
+        {/* Analysis Result Dialog */}
+        <Dialog open={!!analysisResult} onOpenChange={(open) => !open && setAnalysisResult(null)}>
+          <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Prescription Analysis</DialogTitle>
+              <DialogDescription>
+                Here is what we found in your prescription.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 prose dark:prose-invert text-sm">
+              <ReactMarkdown>{analysisResult || ''}</ReactMarkdown>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setAnalysisResult(null)}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90"
+              >
+                Close
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
